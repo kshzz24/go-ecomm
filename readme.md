@@ -428,10 +428,10 @@ This project is licensed under the MIT License.
 ## 👨‍💻 Author
 
 **Your Name**  
-GitHub: [@yourusername](https://github.com/yourusername)  
-Email: your.email@example.com
+GitHub: [@kshzz24](https://github.com/kshzz24)  
 
-Built with ❤️ using Go, Gin, and MongoDB
+
+Built with ❤️ by Kshitiz using Go, Gin and Mongodb
 
 ---
 
