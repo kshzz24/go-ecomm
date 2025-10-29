@@ -11,6 +11,9 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/kshzz24/ecomm-go/database"
 	"github.com/kshzz24/ecomm-go/models"
+	generate "github.com/kshzz24/ecomm-go/tokens"
+
+	// token "github.com/kshzz24/ecomm-go/tokens"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
@@ -183,9 +186,9 @@ func Signup() gin.HandlerFunc {
 	}
 }
 
-func ProductViewerAdmin() gin.HandlerFunc {
+// func ProductViewerAdmin() gin.HandlerFunc {
 
-}
+// }
 
 func SearchProduct() gin.HandlerFunc {
 	return func(c *gin.Context) {

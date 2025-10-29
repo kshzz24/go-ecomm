@@ -9,6 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kshzz24/ecomm-go/database"
+	"github.com/kshzz24/ecomm-go/models"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -105,7 +107,67 @@ func (app *Application) RemoveItem() gin.HandlerFunc {
 }
 
 func GetItemFromCart() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user_id := c.Query("userId")
+		if user_id == "" {
+			c.Header("Content-Type", "application/json")
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "invalid id",
+			})
+			c.Abort()
+			return
+		}
 
+		usert_id, _ := primitive.ObjectIDFromHex(user_id)
+
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		var filledcart models.User
+
+		err := UserCollection.FindOne(ctx, bson.D{{Key: "_id", Value: usert_id}}).Decode(&filledcart)
+		if err != nil {
+			log.Println(err)
+			c.IndentedJSON(500, "not found")
+			return
+		}
+
+		filterMatch := bson.D{{
+			Key:   "$match",
+			Value: bson.D{{Key: "_id", Value: usert_id}},
+		}}
+
+		unwind := bson.D{{
+			Key:   "$unwind",
+			Value: bson.D{{Key: "path", Value: "$usercart"}},
+		}}
+
+		grouping := bson.D{{
+			Key: "$group",
+			Value: bson.D{
+				{Key: "_id", Value: "$_id"},
+				{Key: "total", Value: bson.D{{Key: "$sum", Value: "$usercart.price"}}},
+			},
+		}}
+
+		cursor, err := UserCollection.Aggregate(ctx, mongo.Pipeline{filterMatch, unwind, grouping})
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		var listing []bson.M
+		if err = cursor.All(ctx, &listing); err != nil {
+			log.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+		}
+
+		for _, json := range listing {
+			c.IndentedJSON(200, json["total"])
+			c.IndentedJSON(200, filledcart.UserCart)
+		}
+
+		ctx.Done()
+	}
 }
 
 func (app *Application) BuyFromCart() gin.HandlerFunc {
@@ -167,5 +229,4 @@ func (app *Application) Instantbuy() gin.HandlerFunc {
 
 		c.IndentedJSON(200, "successfully placed the order")
 	}
-
 }

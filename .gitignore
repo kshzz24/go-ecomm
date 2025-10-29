@@ -1,0 +1,54 @@
+# Binaries and build artifacts
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.a
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Dependency directories
+/vendor/
+*.modcache
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+
+# Environment and config files
+.env
+.env.*
+*.local
+config.yaml
+config.json
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test coverage reports
+coverage.out
+
+# Build output
+/dist/
+build/
+cmd/main
+
+# MongoDB dump files
+dump/
+*.bson
+*.metadata.json

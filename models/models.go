@@ -40,7 +40,7 @@ type ProductUser struct {
 }
 
 type Address struct {
-	AddressID primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	AddressID primitive.ObjectID `bson:"address_id,omitempty" json:"address_id,omitempty"`
 	House     string             `bson:"house_name,omitempty" json:"house_name,omitempty"`
 	Street    string             `bson:"street_name,omitempty" json:"street_name,omitempty"`
 	City      string             `bson:"city_name,omitempty" json:"city_name,omitempty"`
@@ -48,7 +48,7 @@ type Address struct {
 }
 
 type Order struct {
-	OrderID       primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	OrderID       primitive.ObjectID `bson:"order_id,omitempty" json:"order_id,omitempty"`
 	OrderCart     []ProductUser      `bson:"order_list,omitempty" json:"order_list,omitempty"`
 	OrderedAt     time.Time          `bson:"ordered_at,omitempty" json:"ordered_at,omitempty"`
 	Price         uint64             `bson:"total_price,omitempty" json:"total_price,omitempty"`
