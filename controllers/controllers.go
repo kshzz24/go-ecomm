@@ -15,6 +15,7 @@ import (
 
 	// token "github.com/kshzz24/ecomm-go/tokens"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -49,17 +50,15 @@ func VerifyPassword(userPassword string, givenPassword string) (bool, string) {
 
 func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 		var user models.User
-
+		var founduser models.User
 		if err := c.BindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err})
 			return
 		}
+
 		validationErr := Validate.Struct(user)
 
 		if validationErr != nil {
@@ -68,34 +67,23 @@ func Login() gin.HandlerFunc {
 			})
 			return
 		}
-
-		var foundUser models.User
-
-		err := UserCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&foundUser)
-
+		err := UserCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&founduser)
+		defer cancel()
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": "login or password incorrect",
-			})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "login or password incorrect"})
 			return
 		}
-
-		isPasswordValid, msg := VerifyPassword(user.Password, foundUser.Password)
-
-		if !isPasswordValid {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": msg,
-			})
-
+		PasswordIsValid, msg := VerifyPassword(user.Password, founduser.Password)
+		defer cancel()
+		if !PasswordIsValid {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			fmt.Println(msg)
 			return
 		}
-
-		token, refreshToken, _ := generate.TokenGenerator(foundUser.Email, foundUser.FirstName, foundUser.LastName, foundUser.UserID)
-
-		generate.UpdateAllTokens(token, refreshToken, foundUser.UserID)
-
-		c.JSON(http.StatusFound, foundUser)
+		token, refreshToken, _ := generate.TokenGenerator(founduser.Email, founduser.FirstName, founduser.LastName, founduser.UserID)
+		defer cancel()
+		generate.UpdateAllTokens(token, refreshToken, founduser.UserID)
+		c.JSON(http.StatusFound, founduser)
 
 	}
 }
@@ -163,6 +151,7 @@ func Signup() gin.HandlerFunc {
 		user.CreatedAt, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		user.UpdatedAt, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 
+		user.ID = primitive.NewObjectID()
 		user.UserID = user.ID.Hex()
 
 		token, refreshtoken, _ := generate.TokenGenerator(user.Email, user.FirstName, user.LastName, user.UserID)
@@ -179,6 +168,7 @@ func Signup() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": "user not get created",
 			})
+			return
 		}
 
 		c.JSON(http.StatusCreated, "Successfully signed in")

@@ -22,7 +22,10 @@ type User struct {
 	AddressDetails []Address          `bson:"address,omitempty" json:"address,omitempty"`
 	OrderStatus    []Order            `bson:"orders,omitempty" json:"orders,omitempty"`
 }
-
+type LoginInput struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8"`
+}
 type Product struct {
 	ProductID   primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	ProductName string             `bson:"product_name,omitempty" json:"product_name,omitempty"`
